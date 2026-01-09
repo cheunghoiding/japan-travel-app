@@ -1,153 +1,185 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>旅行生活管理 App</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Vue 3 -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅行生活 App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 
 <body class="bg-gray-100 flex justify-center">
-  <div id="app" class="w-full max-w-md p-4 space-y-4">
+<div id="app" class="w-full max-w-md p-4 space-y-4">
 
-    <!-- Header -->
-    <h1 class="text-2xl font-bold text-center">我的生活管理</h1>
+<h1 class="text-2xl font-bold text-center">✈️ 旅行管理</h1>
 
-    <!-- 行程表 -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="font-semibold mb-2">📅 行程表</h2>
-      <input v-model="schedule" placeholder="新增行程"
-        class="w-full border rounded-lg p-2 mb-2">
-      <ul class="text-sm space-y-1">
-        <li v-for="(item, i) in schedules" :key="i">• {{ item }}</li>
-      </ul>
-      <button @click="addSchedule"
-        class="mt-2 w-full bg-black text-white py-2 rounded-xl">新增</button>
-    </div>
+<!-- Tabs -->
+<div class="flex bg-white rounded-xl shadow overflow-x-auto text-sm">
+  <button v-for="t in tabs" :key="t"
+    @click="tab=t"
+    class="flex-1 py-2"
+    :class="tab===t?'bg-black text-white':''">
+    {{ t }}
+  </button>
+</div>
 
-    <!-- 地圖 -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="font-semibold mb-2">🗺️ 地圖</h2>
-      <iframe
-        class="w-full h-48 rounded-xl"
-        src="https://www.google.com/maps?q=Tokyo&output=embed">
-      </iframe>
-    </div>
+<!-- 行程 -->
+<div v-if="tab==='行程'" class="bg-white rounded-xl p-4 shadow">
+  <input v-model="scheduleInput" placeholder="新增行程"
+    class="w-full border p-2 rounded-lg mb-2">
+  <button @click="add(scheduleInput,schedules)"
+    class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+  <ul class="mt-2 text-sm space-y-1">
+    <li v-for="(s,i) in schedules" :key="i">• {{ s }}</li>
+  </ul>
+</div>
 
-    <!-- 記帳功能 -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="font-semibold mb-2">💰 記帳</h2>
+<!-- HKD -->
+<div v-if="tab==='HKD'" class="space-y-3">
 
-      <input v-model="expense.person" placeholder="付款人"
-        class="w-full border rounded-lg p-2 mb-2">
-
-      <select v-model="expense.method"
-        class="w-full border rounded-lg p-2 mb-2">
-        <option>現金</option>
-        <option>信用卡</option>
-      </select>
-
-      <input v-model.number="expense.hkd" type="number"
-        placeholder="港幣 (HKD)"
-        class="w-full border rounded-lg p-2 mb-2">
-
-      <input v-model.number="expense.jpy" type="number"
-        placeholder="日元 (JPY) 公數"
-        class="w-full border rounded-lg p-2 mb-2">
-
-      <button @click="addExpense"
-        class="w-full bg-black text-white py-2 rounded-xl">
-        新增支出
-      </button>
-
-      <ul class="text-sm mt-3 space-y-1">
-        <li v-for="(e, i) in expenses" :key="i">
-          {{ e.person }}｜{{ e.method }}｜HKD {{ e.hkd }}｜JPY {{ e.jpy }}
-        </li>
-      </ul>
-    </div>
-
-    <!-- 待辦事項 -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="font-semibold mb-2">✅ 待辦事項</h2>
-      <input v-model="todo"
-        placeholder="新增待辦"
-        class="w-full border rounded-lg p-2 mb-2">
-      <button @click="addTodo"
-        class="w-full bg-black text-white py-2 rounded-xl">新增</button>
-
-      <ul class="mt-2 text-sm space-y-1">
-        <li v-for="(t, i) in todos" :key="i">• {{ t }}</li>
-      </ul>
-    </div>
-
-    <!-- 購物清單 -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <h2 class="font-semibold mb-2">🛒 購物清單</h2>
-      <input v-model="item"
-        placeholder="新增物品"
-        class="w-full border rounded-lg p-2 mb-2">
-      <button @click="addItem"
-        class="w-full bg-black text-white py-2 rounded-xl">新增</button>
-
-      <ul class="mt-2 text-sm space-y-1">
-        <li v-for="(i, index) in items" :key="index">• {{ i }}</li>
-      </ul>
-    </div>
-
+  <!-- 成員 -->
+  <div class="bg-white rounded-xl p-4 shadow">
+    <input v-model="memberInput" placeholder="新增成員"
+      class="w-full border p-2 rounded-lg mb-2">
+    <button @click="add(memberInput,members)"
+      class="w-full bg-black text-white py-2 rounded-xl">加入成員</button>
+    <div class="text-sm mt-2">成員：{{ members.join('、') }}</div>
   </div>
 
-  <script>
-    Vue.createApp({
-      data() {
-        return {
-          schedule: '',
-          schedules: [],
-          todo: '',
-          todos: [],
-          item: '',
-          items: [],
-          expense: {
-            person: '',
-            method: '現金',
-            hkd: 0,
-            jpy: 0
-          },
-          expenses: []
-        }
-      },
-      methods: {
-        addSchedule() {
-          if (this.schedule) {
-            this.schedules.push(this.schedule)
-            this.schedule = ''
-          }
-        },
-        addTodo() {
-          if (this.todo) {
-            this.todos.push(this.todo)
-            this.todo = ''
-          }
-        },
-        addItem() {
-          if (this.item) {
-            this.items.push(this.item)
-            this.item = ''
-          }
-        },
-        addExpense() {
-          this.expenses.push({ ...this.expense })
-          this.expense.hkd = 0
-          this.expense.jpy = 0
-          this.expense.person = ''
-        }
-      }
-    }).mount('#app')
-  </script>
+  <!-- 記帳 -->
+  <div class="bg-white rounded-xl p-4 shadow space-y-2">
+    <select v-model="hkd.person"
+      class="w-full border p-2 rounded-lg">
+      <option disabled value="">付款人</option>
+      <option v-for="m in members" :key="m">{{ m }}</option>
+    </select>
+
+    <input v-model="hkd.detail" placeholder="帳項"
+      class="w-full border p-2 rounded-lg">
+
+    <input v-model.number="hkd.amount" type="number"
+      placeholder="HKD"
+      class="w-full border p-2 rounded-lg">
+
+    <button @click="addHKD"
+      class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+  </div>
+
+  <!-- Balance -->
+  <div v-if="hkdExpenses.length"
+    class="bg-white rounded-xl p-4 shadow text-sm">
+    <div v-for="(b,name) in balances" :key="name"
+      class="flex justify-between">
+      <span>{{ name }}</span>
+      <span :class="b>=0?'text-green-600':'text-red-600'">
+        {{ b>=0?'收':'付' }} HKD {{ Math.abs(b).toFixed(2) }}
+      </span>
+    </div>
+  </div>
+
+</div>
+
+<!-- JPY -->
+<div v-if="tab==='JPY'" class="space-y-3">
+
+  <!-- 入數 -->
+  <div class="bg-white rounded-xl p-4 shadow space-y-2">
+    <input v-model.number="jpyAmount" type="number"
+      placeholder="入錢 / 扣錢（負數）"
+      class="w-full border p-2 rounded-lg">
+    <input v-model="jpyDetail" placeholder="備註"
+      class="w-full border p-2 rounded-lg">
+    <button @click="addJPY"
+      class="w-full bg-black text-white py-2 rounded-xl">
+      記錄
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl p-4 shadow text-sm">
+    剩餘公數：JPY {{ jpyBalance }}
+  </div>
+</div>
+
+<!-- 待辦 -->
+<div v-if="tab==='待辦'" class="bg-white rounded-xl p-4 shadow">
+  <input v-model="todoInput" placeholder="新增待辦"
+    class="w-full border p-2 rounded-lg mb-2">
+  <button @click="add(todoInput,todos)"
+    class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+  <ul class="mt-2 text-sm space-y-1">
+    <li v-for="(t,i) in todos" :key="i">• {{ t }}</li>
+  </ul>
+</div>
+
+<!-- 購物 -->
+<div v-if="tab==='購物'" class="bg-white rounded-xl p-4 shadow">
+  <input v-model="itemInput" placeholder="新增物品"
+    class="w-full border p-2 rounded-lg mb-2">
+  <button @click="add(itemInput,items)"
+    class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+  <ul class="mt-2 text-sm space-y-1">
+    <li v-for="(i,index) in items" :key="index">• {{ i }}</li>
+  </ul>
+</div>
+
+</div>
+
+<script>
+Vue.createApp({
+  data(){
+    return{
+      tabs:['行程','HKD','JPY','待辦','購物'],
+      tab:'行程',
+
+      schedules:[],
+      scheduleInput:'',
+
+      members:[],
+      memberInput:'',
+      hkd:{person:'',detail:'',amount:0},
+      hkdExpenses:[],
+
+      jpyRecords:[],
+      jpyAmount:0,
+      jpyDetail:'',
+
+      todos:[],
+      todoInput:'',
+      items:[],
+      itemInput:''
+    }
+  },
+  computed:{
+    balances(){
+      const total=this.hkdExpenses.reduce((s,e)=>s+e.amount,0)
+      const share=total/this.members.length
+      const b={}
+      this.members.forEach(m=>b[m]=0)
+      this.hkdExpenses.forEach(e=>b[e.person]+=e.amount)
+      this.members.forEach(m=>b[m]-=share)
+      return b
+    },
+    jpyBalance(){
+      return this.jpyRecords.reduce((s,r)=>s+r.amount,0)
+    }
+  },
+  methods:{
+    add(val,list){
+      if(val){list.push(val);val=''}
+    },
+    addHKD(){
+      if(this.hkd.person&&this.hkd.detail)
+        this.hkdExpenses.push({...this.hkd})
+      this.hkd={person:'',detail:'',amount:0}
+    },
+    addJPY(){
+      if(this.jpyAmount)
+        this.jpyRecords.push({amount:this.jpyAmount,detail:this.jpyDetail})
+      this.jpyAmount=0
+      this.jpyDetail=''
+    }
+  }
+}).mount('#app')
+</script>
 </body>
 </html>
