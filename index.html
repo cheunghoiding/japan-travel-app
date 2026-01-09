@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>旅行生活管理 App</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body class="bg-gray-100 flex justify-center">
+  <div id="app" class="w-full max-w-md p-4 space-y-4">
+
+    <!-- Header -->
+    <h1 class="text-2xl font-bold text-center">我的生活管理</h1>
+
+    <!-- 行程表 -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-2">📅 行程表</h2>
+      <input v-model="schedule" placeholder="新增行程"
+        class="w-full border rounded-lg p-2 mb-2">
+      <ul class="text-sm space-y-1">
+        <li v-for="(item, i) in schedules" :key="i">• {{ item }}</li>
+      </ul>
+      <button @click="addSchedule"
+        class="mt-2 w-full bg-black text-white py-2 rounded-xl">新增</button>
+    </div>
+
+    <!-- 地圖 -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-2">🗺️ 地圖</h2>
+      <iframe
+        class="w-full h-48 rounded-xl"
+        src="https://www.google.com/maps?q=Tokyo&output=embed">
+      </iframe>
+    </div>
+
+    <!-- 記帳功能 -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-2">💰 記帳</h2>
+
+      <input v-model="expense.person" placeholder="付款人"
+        class="w-full border rounded-lg p-2 mb-2">
+
+      <select v-model="expense.method"
+        class="w-full border rounded-lg p-2 mb-2">
+        <option>現金</option>
+        <option>信用卡</option>
+      </select>
+
+      <input v-model.number="expense.hkd" type="number"
+        placeholder="港幣 (HKD)"
+        class="w-full border rounded-lg p-2 mb-2">
+
+      <input v-model.number="expense.jpy" type="number"
+        placeholder="日元 (JPY) 公數"
+        class="w-full border rounded-lg p-2 mb-2">
+
+      <button @click="addExpense"
+        class="w-full bg-black text-white py-2 rounded-xl">
+        新增支出
+      </button>
+
+      <ul class="text-sm mt-3 space-y-1">
+        <li v-for="(e, i) in expenses" :key="i">
+          {{ e.person }}｜{{ e.method }}｜HKD {{ e.hkd }}｜JPY {{ e.jpy }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- 待辦事項 -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-2">✅ 待辦事項</h2>
+      <input v-model="todo"
+        placeholder="新增待辦"
+        class="w-full border rounded-lg p-2 mb-2">
+      <button @click="addTodo"
+        class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+
+      <ul class="mt-2 text-sm space-y-1">
+        <li v-for="(t, i) in todos" :key="i">• {{ t }}</li>
+      </ul>
+    </div>
+
+    <!-- 購物清單 -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <h2 class="font-semibold mb-2">🛒 購物清單</h2>
+      <input v-model="item"
+        placeholder="新增物品"
+        class="w-full border rounded-lg p-2 mb-2">
+      <button @click="addItem"
+        class="w-full bg-black text-white py-2 rounded-xl">新增</button>
+
+      <ul class="mt-2 text-sm space-y-1">
+        <li v-for="(i, index) in items" :key="index">• {{ i }}</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          schedule: '',
+          schedules: [],
+          todo: '',
+          todos: [],
+          item: '',
+          items: [],
+          expense: {
+            person: '',
+            method: '現金',
+            hkd: 0,
+            jpy: 0
+          },
+          expenses: []
+        }
+      },
+      methods: {
+        addSchedule() {
+          if (this.schedule) {
+            this.schedules.push(this.schedule)
+            this.schedule = ''
+          }
+        },
+        addTodo() {
+          if (this.todo) {
+            this.todos.push(this.todo)
+            this.todo = ''
+          }
+        },
+        addItem() {
+          if (this.item) {
+            this.items.push(this.item)
+            this.item = ''
+          }
+        },
+        addExpense() {
+          this.expenses.push({ ...this.expense })
+          this.expense.hkd = 0
+          this.expense.jpy = 0
+          this.expense.person = ''
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>
